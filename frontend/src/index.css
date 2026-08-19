@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary-blue: #2563eb;
+  --primary-blue-hover: #1d4ed8;
+  --deep-navy: #0f172a;
+  --bg-slate: #f8fafc;
+  --card-bg: #ffffff;
+  --accent-red: #dc2626;
+  --accent-red-hover: #b91c1c;
+  --border-slate: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --success-green: #10b981;
+  --warning-amber: #f59e0b;
+
+  --font-ui: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-reading: 'Merriweather', serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100vh;
+  max-width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-slate);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hardware Accelerated Global Rendering Layers */
+.card, .recommendation-book-card, .btn-primary, .btn-secondary, .cart-item-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ultra-Smooth Live Page Turning / Section Slide Animation */
+@keyframes pageTurnSlide {
+  0% {
+    opacity: 0.1;
+    transform: translateY(6px) scale(0.998);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Spin Icon Animation */
+@keyframes spinIcon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin-icon {
+  animation: spinIcon 0.8s linear infinite;
+}
+
+.page-transition-wrapper {
+  animation: pageTurnSlide 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  width: 100%;
+  min-height: 100%;
+  will-change: opacity, transform;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease, transform 150ms ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+  will-change: background-color, transform;
+}
+.btn-primary:hover {
+  background-color: var(--primary-blue-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--deep-navy);
+  border: 1px solid var(--border-slate);
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease, border-color 150ms ease;
+  will-change: background-color, border-color;
+}
+.btn-secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-accent {
+  background-color: var(--accent-red);
+  color: white;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease;
+  will-change: background-color;
+}
+.btn-accent:hover {
+  background-color: var(--accent-red-hover);
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--border-slate);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Diff Viewer Styling */
+.diff-original {
+  background-color: #fef2f2;
+  color: #991b1b;
+  text-decoration: line-through;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+}
+.diff-suggested {
+  background-color: #f0fdf4;
+  color: #166534;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+/* Reading Themes */
+.reader-theme-light {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+.reader-theme-sepia {
+  background-color: #fbf0d9;
+  color: #432818;
+}
+.reader-theme-dark {
+  background-color: #0f172a;
+  color: #f8fafc;
+}

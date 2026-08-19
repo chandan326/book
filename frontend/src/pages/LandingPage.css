@@ -1,0 +1,544 @@
+/* Editorial Book Store & Publishing Showcase Styles */
+
+.bookie-home-container {
+  background-color: #f8fafc;
+  color: #0f172a;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* 1. Sub-nav Category & Search Header Bar - Single Line Alignment */
+.bookie-subnav-bar {
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.subnav-left-categories {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.subnav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #475569;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.subnav-tab:hover {
+  color: #ea580c;
+  background-color: rgba(234, 88, 12, 0.08);
+}
+
+.subnav-tab.active {
+  color: #ea580c;
+  background-color: #ffedd5;
+  font-weight: 700;
+}
+
+.subnav-right-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Types of Books Dropdown Selector */
+.book-types-dropdown-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  padding: 0 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  height: 36px;
+}
+
+.book-types-dropdown-box:hover, .book-types-dropdown-box:focus-within {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.12);
+}
+
+.book-types-select {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.25rem 0.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  max-width: 165px;
+}
+
+.book-types-select option {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+  padding: 0.3rem;
+}
+
+.search-input-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  height: 36px;
+}
+
+.search-input-box input {
+  border: none;
+  outline: none;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.825rem;
+  color: #0f172a;
+  width: 190px;
+}
+
+.search-btn-accent {
+  background-color: #ea580c;
+  color: #ffffff;
+  border: none;
+  height: 100%;
+  padding: 0 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.search-btn-accent:hover {
+  background-color: #c2410c;
+}
+
+.cart-icon-btn {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  height: 36px;
+  padding: 0 0.65rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.cart-icon-btn:hover {
+  border-color: #ea580c;
+  color: #ea580c;
+}
+
+.cart-badge-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ea580c;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 4px rgba(234, 88, 12, 0.4);
+}
+
+.cart-icon-btn.favorite-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.cart-badge-count.fav-count {
+  background-color: #ef4444;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+}
+
+/* 2. Featured Showcase Section */
+.featured-showcase-section {
+  background-color: #111827;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  border-bottom: 1px solid #1f2937;
+}
+
+.showcase-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.showcase-card {
+  background-color: #ffffff;
+  border-radius: 0.65rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 220px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  position: relative;
+}
+
+.showcase-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.showcase-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ea580c;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.showcase-card-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.showcase-card-author {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.showcase-btn-outlined {
+  background: transparent;
+  color: #ea580c;
+  border: 1px solid #fdba74;
+  padding: 0.4rem 1.1rem;
+  border-radius: 0.35rem;
+  font-size: 0.825rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showcase-btn-outlined:hover {
+  background: #fff7ed;
+  border-color: #ea580c;
+}
+
+.showcase-card-artwork {
+  width: 110px;
+  height: 150px;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.showcase-card-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-dots-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 1.25rem;
+}
+
+.carousel-dots-row .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #4b5563;
+  cursor: pointer;
+}
+
+.carousel-dots-row .dot.active {
+  background-color: #ffffff;
+  width: 18px;
+  border-radius: 4px;
+}
+
+/* 3. Our Recommendations Section */
+.recommendations-section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem 1.5rem;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.section-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: #0f172a;
+  text-align: center;
+  width: 100%;
+}
+
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  color: #ea580c;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.view-all-btn:hover {
+  text-decoration: underline;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.25rem;
+}
+
+.recommendation-book-card {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+}
+
+.recommendation-book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-color: #cbd5e1;
+}
+
+.cover-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.recommendation-book-card:hover .cover-wrapper img {
+  transform: scale(1.05);
+}
+
+.badge-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.badge-tag.new {
+  background-color: #064e3b;
+}
+
+.badge-tag.discount {
+  background-color: #991b1b;
+}
+
+.hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.recommendation-book-card:hover .hover-overlay {
+  opacity: 1;
+}
+
+.btn-read-preview {
+  background: #ea580c;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.book-card-info {
+  padding: 0.75rem;
+}
+
+.book-card-title {
+  font-size: 0.925rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-card-author {
+  font-size: 0.775rem;
+  color: #64748b;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.725rem;
+}
+
+.book-rating {
+  font-weight: 700;
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.book-genre {
+  color: #475569;
+  font-weight: 500;
+}
+
+/* 4. AI Author Creation Callout Banner */
+.ai-author-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  padding: 4rem 2rem;
+  border-top: 1px solid #334155;
+  text-align: center;
+}
+
+.banner-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ai-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(37, 99, 235, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.35rem 0.9rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.banner-heading {
+  font-size: 2.25rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  line-height: 1.25;
+  margin-bottom: 1rem;
+}
+
+.banner-desc {
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Media Breakpoints */
+@media (max-width: 1200px) {
+  .showcase-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .recommendations-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .showcase-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .search-input-box input {
+    width: 100%;
+  }
+}

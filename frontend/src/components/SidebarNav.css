@@ -1,0 +1,343 @@
+/* PANNA.AI Vertical Sidebar Design System - Hardware Accelerated 60fps/120fps Smoothness */
+
+.saas-layout-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  contain: layout;
+}
+
+.saas-sidebar-container {
+  width: 250px;
+  background-color: #070d1b;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem 0.85rem;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 180ms cubic-bezier(0.16, 1, 0.3, 1), padding 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  user-select: none;
+  z-index: 90;
+  will-change: width, padding;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.saas-sidebar-container.collapsed {
+  width: 70px;
+  padding: 1.25rem 0.5rem;
+}
+
+/* Top Left Brand Logo Box */
+.sidebar-top-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  user-select: none;
+}
+
+.saas-sidebar-container.collapsed .sidebar-top-brand {
+  justify-content: center;
+  padding-bottom: 1rem;
+}
+
+.header-logo-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #059669 0%, #2563eb 100%);
+  color: #fffbeb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  border: 1.5px solid rgba(254, 243, 199, 0.4);
+  transition: transform 180ms ease;
+  flex-shrink: 0;
+  will-change: transform;
+}
+
+.panna-logo-letter {
+  font-family: var(--font-heading), 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: #fffbeb; /* Creamy White */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1;
+}
+
+.sidebar-top-brand:hover .header-logo-badge {
+  transform: scale(1.06);
+}
+
+.brand-text-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.header-brand-title {
+  font-size: 20px;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  color: #ffffff;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+}
+
+.header-brand-subtitle {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  margin-top: 1px;
+}
+
+.sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+  white-space: nowrap;
+  width: 100%;
+  text-align: left;
+  will-change: background-color, color;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.sidebar-nav-item.active {
+  background: rgba(37, 99, 235, 0.18);
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.saas-sidebar-container.collapsed .sidebar-nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Primary Action Button - Create Book */
+.sidebar-btn-create {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #2563eb;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  width: 100%;
+  justify-content: center;
+  will-change: background-color, transform;
+}
+
+.sidebar-btn-create:hover {
+  background: #1d4ed8;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+}
+
+.saas-sidebar-container.collapsed .sidebar-btn-create {
+  justify-content: center;
+  padding: 0;
+}
+
+/* AI Studio Glowing Pill Item */
+.sidebar-nav-item.item-ai-studio {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(30, 41, 59, 0.7) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.sidebar-nav-item.item-ai-studio:hover, .sidebar-nav-item.item-ai-studio.active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35) 0%, rgba(30, 41, 59, 0.9) 100%);
+  border-color: #38bdf8;
+}
+
+/* Admin Portal Button in Sidebar */
+.sidebar-btn-admin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  white-space: nowrap;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.sidebar-btn-admin:hover, .sidebar-btn-admin.active {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.saas-sidebar-container.collapsed .sidebar-btn-admin {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Sidebar Footer User Profile / Login System */
+.sidebar-footer-user {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 1rem;
+}
+
+.saas-sidebar-container.collapsed .sidebar-footer-user {
+  display: flex;
+  justify-content: center;
+}
+
+/* User Profile Row */
+.user-profile-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.user-avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.user-profile-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name-singleline {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  white-space: nowrap;
+}
+
+.user-role-badge.super-admin {
+  color: #f87171;
+}
+
+.user-logout-icon-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.user-logout-icon-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Guest Login Action Button */
+.sidebar-btn-login-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  white-space: nowrap;
+  width: 100%;
+  justify-content: center;
+}
+
+.sidebar-btn-login-action:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: #38bdf8;
+}
+
+.saas-sidebar-container.collapsed .sidebar-btn-login-action {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Main Content Area - Isolated Layout Containment for Zero Reflow Stutter */
+.saas-main-content {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  background-color: #f8fafc;
+  overflow-y: auto;
+  contain: layout style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
