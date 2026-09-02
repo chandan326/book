@@ -55,6 +55,17 @@
   font-weight: 700;
 }
 
+.subnav-tab.ai-learning-tab {
+  color: #6d28d9;
+  background: #ede9fe;
+  font-weight: 800;
+}
+
+.subnav-tab.ai-learning-tab:hover {
+  color: #ffffff;
+  background: #6d28d9;
+}
+
 .subnav-right-search {
   display: flex;
   align-items: center;

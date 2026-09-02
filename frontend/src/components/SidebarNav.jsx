@@ -1,7 +1,7 @@
 import React, { useRef, memo } from 'react';
 import { 
   BookOpen, LayoutDashboard, PlusCircle, Sparkles, Library, Search, 
-  MapPin, ShieldCheck, LogOut, LogIn, AlertCircle, User
+  MapPin, ShieldCheck, LogOut, LogIn, AlertCircle, BrainCircuit
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './SidebarNav.css';
@@ -110,6 +110,16 @@ function SidebarNav({ activePage, setActivePage, isCollapsed, setIsCollapsed, op
           )}
 
           {/* 5. Discover */}
+          <button
+            onClick={() => handleNavClick('learn')}
+            className={`sidebar-nav-item item-ai-studio ${activePage === 'learn' ? 'active' : ''}`}
+            title={isCollapsed ? "AI Learning Lab" : ""}
+          >
+            <BrainCircuit size={18} color="#A78BFA" />
+            {!isCollapsed && <span>AI Learning Lab</span>}
+          </button>
+
+          {/* 6. Discover */}
           <button 
             onClick={() => handleNavClick('discover')}
             className={`sidebar-nav-item ${activePage === 'discover' ? 'active' : ''}`}

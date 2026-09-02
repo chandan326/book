@@ -1,4 +1,15 @@
-# AI Book Creation, Editing, Publishing, Reading & Author Management Platform
+# PANNA.AI — Personalized AI Reading & Authoring Platform
+
+PANNA.AI turns books and course chapters into interactive learning experiences. Alongside book creation, publishing, discovery, and reader tools, the hackathon edition includes an **AI Learning Lab** that works directly in the browser:
+
+- Frequency-weighted extractive chapter summaries
+- Key-concept discovery
+- Chapter-grounded question answering with confidence and evidence
+- Automatically generated knowledge checks with explanations
+- Reading difficulty, word count, and estimated study time
+- Privacy-first, on-device processing with no API key required
+
+> Transparency: PANNA.AI began as a book authoring/publishing foundation. The AI Learning Lab and education-focused experience are the new challenge contribution.
 
 A startup-grade, professional web application built with **FastAPI** (Python) and **React + Vite** (JavaScript/Tailwind CSS).
 
@@ -38,10 +49,9 @@ npm run dev -- --host 127.0.0.1 --port 5173
 
 ---
 
-## 🔑 Initial Super Admin Credentials
-- **Email**: `chandan.rai771714@gmail.com`
-- **Password**: `Admin12345!`
-- **Role**: `Super Admin`
+## 🔑 Administrator Access
+
+Administrator credentials must be configured privately through environment variables. Never commit real passwords or production secrets to the repository.
 
 ---
 

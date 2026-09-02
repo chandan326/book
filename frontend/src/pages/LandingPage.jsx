@@ -154,6 +154,13 @@ export default function LandingPage({
             <Bookmark size={16} /> Recommendations
           </button>
 
+          <button
+            className="subnav-tab ai-learning-tab"
+            onClick={() => setActivePage('learn')}
+          >
+            <Sparkles size={16} /> AI Learning Lab
+          </button>
+
           <button 
             className="subnav-tab"
             onClick={() => setActivePage('discover')}
