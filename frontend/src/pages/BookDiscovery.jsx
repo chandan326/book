@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Eye, Download, Heart, Sparkles, ShoppingBag } from 'lucide-react';
 import { apiRequest } from '../services/api';
 
-export default function BookDiscovery({ setActivePage, setSelectedBookId, addToCart, toggleFavorite, favoriteItems = [] }) {
+export default function BookDiscovery({ setActivePage, setSelectedBookId, addToCart, toggleFavorite, favoriteItems = [], user, openAuthModal }) {
   const [publicBooks, setPublicBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -34,6 +34,18 @@ export default function BookDiscovery({ setActivePage, setSelectedBookId, addToC
   const handleReadBook = (bookId) => {
     if (setSelectedBookId) setSelectedBookId(bookId);
     if (setActivePage) setActivePage('reader');
+  };
+
+  const handleBookAction = (book) => {
+    if (book.access_type === 'paid') {
+      if (!user) {
+        openAuthModal?.('signin');
+        return;
+      }
+      addToCart?.(book);
+      return;
+    }
+    handleReadBook(book.id);
   };
 
   return (
@@ -148,19 +160,11 @@ export default function BookDiscovery({ setActivePage, setSelectedBookId, addToC
 
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button 
-                      onClick={() => addToCart && addToCart(book)}
-                      className="btn-secondary"
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
-                      title="Add to Cart"
-                    >
-                      <ShoppingBag size={14} /> + Cart
-                    </button>
-                    <button 
-                      onClick={() => handleReadBook(book.id)}
+                      onClick={() => handleBookAction(book)}
                       className="btn-primary"
                       style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
                     >
-                      Read Online
+                      {book.access_type === 'paid' ? <><ShoppingBag size={14} /> Buy ₹{book.price}</> : 'Read Free'}
                     </button>
                   </div>
                 </div>

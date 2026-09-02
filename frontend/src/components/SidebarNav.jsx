@@ -76,7 +76,7 @@ function SidebarNav({ activePage, setActivePage, isCollapsed, setIsCollapsed, op
           )}
 
           {/* 2. Primary Action Button: Create Book */}
-          <button 
+          <button
             onClick={() => user ? handleNavClick('create') : openAuthModal('signup')}
             className={`sidebar-btn-create ${activePage === 'create' ? 'active' : ''}`}
             title={isCollapsed ? "Create Book" : ""}
@@ -98,16 +98,14 @@ function SidebarNav({ activePage, setActivePage, isCollapsed, setIsCollapsed, op
           )}
 
           {/* 4. Reader Mode */}
-          {user && (
-            <button 
-              onClick={() => handleNavClick('reader')}
-              className={`sidebar-nav-item ${activePage === 'reader' ? 'active' : ''}`}
-              title={isCollapsed ? "Reader Mode" : ""}
-            >
-              <Library size={18} />
-              {!isCollapsed && <span>Reader Mode</span>}
-            </button>
-          )}
+          <button
+            onClick={() => handleNavClick('discover')}
+            className={`sidebar-nav-item ${activePage === 'reader' ? 'active' : ''}`}
+            title={isCollapsed ? "Read Books" : ""}
+          >
+            <Library size={18} />
+            {!isCollapsed && <span>Read Books</span>}
+          </button>
 
           {/* 5. Discover */}
           <button

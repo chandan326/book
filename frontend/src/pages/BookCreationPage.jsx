@@ -13,6 +13,8 @@ export default function BookCreationPage({ setActivePage, setSelectedBookId }) {
   const [targetAudience, setTargetAudience] = useState('General Readers');
   const [writingStyle, setWritingStyle] = useState('Professional & Clear');
   const [description, setDescription] = useState('');
+  const [accessType, setAccessType] = useState('free');
+  const [price, setPrice] = useState('99');
 
   // Upload state
   const [file, setFile] = useState(null);
@@ -49,10 +51,17 @@ export default function BookCreationPage({ setActivePage, setSelectedBookId }) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await apiRequest('/upload/', 'POST', formData, true);
-        
+        const uploaded = await apiRequest('/upload', 'POST', formData, true);
+        const fallbackTitle = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+        const res = await apiRequest('/books', 'POST', {
+          title: fallbackTitle || 'Imported Manuscript',
+          description: 'Imported manuscript stored securely in Cloudinary.',
+          manuscript_url: uploaded.url,
+          access_type: accessType,
+          price: accessType === 'paid' ? Number(price) : 0
+        });
         setProcessingStatus('Ready!');
-        setSelectedBookId(res.book_id);
+        setSelectedBookId(res.id);
         setActivePage('studio');
       } else {
         const bookPayload = {
@@ -62,7 +71,9 @@ export default function BookCreationPage({ setActivePage, setSelectedBookId }) {
           language,
           target_audience: targetAudience,
           writing_style: writingStyle,
-          description
+          description,
+          access_type: accessType,
+          price: accessType === 'paid' ? Number(price) : 0
         };
 
         const createdBook = await apiRequest('/books/', 'POST', bookPayload);
@@ -242,6 +253,34 @@ export default function BookCreationPage({ setActivePage, setSelectedBookId }) {
                 placeholder="Briefly describe what your book is about..."
                 style={{ width: '100%', padding: '0.65rem', border: '1px solid #CBD5E1', borderRadius: '0.5rem' }}
               />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.25rem' }}>Reader Access</label>
+                <select
+                  value={accessType}
+                  onChange={(e) => setAccessType(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem', border: '1px solid #CBD5E1', borderRadius: '0.5rem' }}
+                >
+                  <option value="free">Free — anyone can read</option>
+                  <option value="paid">Paid — login and purchase required</option>
+                </select>
+              </div>
+              {accessType === 'paid' && (
+                <div>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.25rem' }}>Price (₹)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    required
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    style={{ width: '100%', padding: '0.65rem', border: '1px solid #CBD5E1', borderRadius: '0.5rem' }}
+                  />
+                </div>
+              )}
             </div>
           </>
         )}

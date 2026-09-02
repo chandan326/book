@@ -53,6 +53,17 @@ npm run dev -- --host 127.0.0.1 --port 5173
 
 Administrator credentials must be configured privately through environment variables. Never commit real passwords or production secrets to the repository.
 
+## Production environment
+
+PANNA's Vercel serverless API requires `MONGO_URI`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Copy the names from `.env.example` into the PANNA.AI Vercel project's environment settings. Do not reuse a database password that has ever been committed publicly; rotate it in MongoDB Atlas first.
+
+Public and authorization rules:
+
+- Anyone can browse and read public free books without signing in.
+- Paid-book access, purchases, author dashboards, and book creation require authentication.
+- Only the author can edit or delete their own books and chapters.
+- Uploaded assets are stored in a per-user Cloudinary folder.
+
 ---
 
 ## 🧪 Running Automated Tests

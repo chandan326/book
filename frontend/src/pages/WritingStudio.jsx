@@ -139,6 +139,17 @@ export default function WritingStudio({ selectedBookId, setActivePage }) {
     }
   };
 
+  const handlePublishBook = async () => {
+    if (!book) return;
+    try {
+      const updated = await apiRequest(`/books/${book.id}`, 'PUT', { status: 'Public' });
+      setBook(updated);
+      alert(book.access_type === 'paid' ? 'Paid book published. Readers must sign in and purchase it.' : 'Book published. Anyone can now read it without signing in.');
+    } catch (err) {
+      alert('Publishing failed: ' + err.message);
+    }
+  };
+
   const handleAddChapter = async () => {
     const title = prompt("Enter new chapter title:", `Chapter ${(book?.chapters?.length || 0) + 1}: New Chapter`);
     if (!title) return;
@@ -342,8 +353,16 @@ export default function WritingStudio({ selectedBookId, setActivePage }) {
             <Save size={16} /> {saving ? "Saving..." : "Save Manuscript"}
           </button>
 
+          <button
+            onClick={handlePublishBook}
+            className="btn-secondary"
+            style={{ fontSize: '0.85rem', padding: '0.45rem 0.85rem', color: book.status === 'Public' ? '#15803D' : undefined }}
+          >
+            <Check size={16} /> {book.status === 'Public' ? 'Published' : 'Publish Book'}
+          </button>
+
           <button 
-            onClick={() => window.open(`http://localhost:8000/api/v1/export/pdf/${book.id}`, '_blank')}
+            onClick={() => window.print()}
             className="btn-secondary"
             style={{ fontSize: '0.85rem', padding: '0.45rem 0.85rem' }}
           >

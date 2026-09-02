@@ -52,7 +52,7 @@ export default function ReaderModePage({ selectedBookId, setActivePage }) {
 
   const loadSamplePublicBook = async () => {
     try {
-      const publicBooks = await apiRequest('/books/public');
+      const publicBooks = await apiRequest('/books/public?access_type=free');
       if (publicBooks.length > 0) {
         setBook(publicBooks[0]);
       }

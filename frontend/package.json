@@ -10,7 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.31.0",
+    "mongoose": "^8.19.1",
+    "multer": "^2.0.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

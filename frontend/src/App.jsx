@@ -141,6 +141,14 @@ function AppContent() {
     setActivePage('dashboard');
   };
 
+  useEffect(() => {
+    const protectedPages = ['dashboard', 'create', 'studio', 'admin'];
+    if (!user && protectedPages.includes(activePage)) {
+      setActivePage('landing', false);
+      openAuthModal(activePage === 'create' ? 'signup' : 'signin');
+    }
+  }, [activePage, user]);
+
   return (
     <div style={{ height: '100vh', width: '100vw', display: 'flex', backgroundColor: '#F8FAFC', overflow: 'hidden' }}>
       
@@ -212,6 +220,8 @@ function AppContent() {
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}
                 favoriteItems={favoriteItems}
+                user={user}
+                openAuthModal={openAuthModal}
               />
             )}
 

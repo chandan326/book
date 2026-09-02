@@ -160,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'signin', onAu
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.75rem', color: '#94A3B8' }}>
-          Initial Administrator email configured for <strong style={{ color: '#2563EB' }}>chandan.rai771714@gmail.com</strong>
+          Reading free books never requires an account. Sign in only to create or purchase books.
         </div>
       </div>
     </div>
