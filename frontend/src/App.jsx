@@ -29,6 +29,7 @@ function AppContent() {
   const { user } = useAuth();
   const [activePage, setActivePageState] = useState(getInitialPage);
   const [selectedBookId, setSelectedBookId] = useState(null);
+  const [discoveryGenre, setDiscoveryGenre] = useState('All');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   
   // 1. Saved Cart State
@@ -178,6 +179,7 @@ function AppContent() {
                 favoriteItems={favoriteItems}
                 toggleFavorite={toggleFavorite}
                 setIsFavoritesOpen={setIsFavoritesOpen}
+                setDiscoveryGenre={setDiscoveryGenre}
               />
             )}
 
@@ -225,6 +227,7 @@ function AppContent() {
                 favoriteItems={favoriteItems}
                 user={user}
                 openAuthModal={openAuthModal}
+                initialGenre={discoveryGenre}
               />
             )}
 
