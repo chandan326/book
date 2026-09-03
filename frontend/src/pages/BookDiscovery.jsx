@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Eye, Download, Heart, Sparkles, ShoppingBag } from 'lucide-react';
 import { apiRequest } from '../services/api';
 
-export default function BookDiscovery({ setActivePage, setSelectedBookId, addToCart, toggleFavorite, favoriteItems = [], user, openAuthModal }) {
+export default function BookDiscovery({ setActivePage, setSelectedBookId, addToCart, toggleFavorite, favoriteItems = [], user, openAuthModal, initialGenre = 'All' }) {
   const [publicBooks, setPublicBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('All');
+  const [selectedGenre, setSelectedGenre] = useState(initialGenre);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
