@@ -202,6 +202,8 @@ const normalize = (value) => {
   const convert = (item) => {
     if (Array.isArray(item)) return item.map(convert);
     if (item && typeof item === 'object') {
+      if (item._bsontype === 'ObjectId' || item.constructor?.name === 'ObjectId') return item.toString();
+      if (item instanceof Date) return item.toISOString();
       const result = {};
       Object.entries(item).forEach(([key, child]) => {
         if (key === '_id') result.id = String(child);
