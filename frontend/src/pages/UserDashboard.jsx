@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Sparkles, Eye, Download, Plus, Edit3, Trash2, FileText, CheckCircle, BarChart2, HardDrive, Clock } from 'lucide-react';
-import { apiRequest } from '../services/api';
+import { apiRequest, getAuthToken } from '../services/api';
 
 export default function UserDashboard({ setActivePage, setSelectedBookId }) {
   const [books, setBooks] = useState([]);
@@ -36,9 +36,14 @@ export default function UserDashboard({ setActivePage, setSelectedBookId }) {
     }
   };
 
-  const handleExportPDF = async (bookId, e) => {
+  const handleExport = async (bookId, format, e) => {
     e.stopPropagation();
-    window.open(`http://localhost:8000/api/v1/export/pdf/${bookId}`, '_blank');
+    try {
+      const response = await fetch(`/api/v1/export/${format}/${bookId}`, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob(); const url = URL.createObjectURL(blob); const link = document.createElement('a');
+      link.href = url; link.download = `panna-book.${format}`; link.click(); URL.revokeObjectURL(url);
+    } catch (error) { alert(error.message); }
   };
 
   const handleOpenStudio = (bookId) => {
@@ -205,12 +210,14 @@ export default function UserDashboard({ setActivePage, setSelectedBookId }) {
                       <Edit3 size={14} /> Writing Studio
                     </button>
                     <button 
-                      onClick={(e) => handleExportPDF(book.id, e)}
+                      onClick={(e) => handleExport(book.id, 'pdf', e)}
                       className="btn-secondary"
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
                     >
                       <Download size={14} /> PDF
                     </button>
+                    <button onClick={(e) => handleExport(book.id, 'docx', e)} className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>DOCX</button>
+                    <button onClick={(e) => handleExport(book.id, 'epub', e)} className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>EPUB</button>
                   </div>
 
                   <button 

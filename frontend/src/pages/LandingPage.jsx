@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, BookOpen, Headphones, Search, ShoppingBag, Heart,
-  Star, Bookmark, MapPin, ChevronRight, Filter, PlusCircle, FileUp, WandSparkles, Globe2, CheckCircle2
+  Star, Bookmark, MapPin, ChevronRight, Filter, PlusCircle, FileUp, WandSparkles, Globe2, CheckCircle2, Play
 } from 'lucide-react';
 import './LandingPage.css';
 
@@ -249,7 +249,7 @@ export default function LandingPage({
           <p>Plan, write, improve and prepare your manuscript for readers—inside one distraction-free studio built for first-time and experienced authors.</p>
           <div className="hero-actions">
             <button className="hero-primary" onClick={() => user ? setActivePage('create') : openAuthModal('signup')}><PlusCircle size={18}/> Start writing free</button>
-            <button className="hero-secondary" onClick={() => setActivePage('discover')}><BookOpen size={18}/> Explore the library</button>
+            <button className="hero-secondary" onClick={() => setActivePage('suite')}><Play size={18}/> View competition demo</button>
           </div>
           <div className="hero-trust"><span><CheckCircle2 size={15}/> Free to start</span><span><CheckCircle2 size={15}/> Your work stays private</span><span><CheckCircle2 size={15}/> Export anytime</span></div>
         </div>

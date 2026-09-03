@@ -1,7 +1,7 @@
 import React, { useRef, memo } from 'react';
 import { 
   BookOpen, LayoutDashboard, PlusCircle, Sparkles, Library, Search, 
-  MapPin, ShieldCheck, LogOut, LogIn, AlertCircle, BrainCircuit
+  MapPin, ShieldCheck, LogOut, LogIn, AlertCircle, BrainCircuit, Trophy
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './SidebarNav.css';
@@ -115,6 +115,11 @@ function SidebarNav({ activePage, setActivePage, isCollapsed, setIsCollapsed, op
           >
             <BrainCircuit size={18} color="#A78BFA" />
             {!isCollapsed && <span>AI Learning Lab</span>}
+          </button>
+
+          <button onClick={() => handleNavClick('suite')} className={`sidebar-nav-item ${activePage === 'suite' ? 'active' : ''}`} title={isCollapsed ? "Competition Suite" : ""}>
+            <Trophy size={18} color="#F59E0B" />
+            {!isCollapsed && <span>Competition Suite</span>}
           </button>
 
           {/* 6. Discover */}

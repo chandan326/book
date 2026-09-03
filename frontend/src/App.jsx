@@ -14,8 +14,9 @@ import AuthModal from './pages/AuthModal';
 import CartDrawer from './components/CartDrawer';
 import FavoritesDrawer from './components/FavoritesDrawer';
 import LearningLab from './pages/LearningLab';
+import CompetitionSuite from './pages/CompetitionSuite';
 
-const VALID_PAGES = ['landing', 'dashboard', 'create', 'studio', 'reader', 'learn', 'discover', 'publishers', 'complaint', 'admin'];
+const VALID_PAGES = ['landing', 'dashboard', 'create', 'studio', 'reader', 'learn', 'suite', 'discover', 'publishers', 'complaint', 'admin'];
 
 const getInitialPage = () => {
   const hash = window.location.hash.replace('#/', '').replace('#', '');
@@ -212,6 +213,8 @@ function AppContent() {
             )}
 
             {activePage === 'learn' && <LearningLab />}
+
+            {activePage === 'suite' && <CompetitionSuite user={user} openAuthModal={openAuthModal} setActivePage={setActivePage} setSelectedBookId={setSelectedBookId} />}
 
             {activePage === 'discover' && (
               <BookDiscovery 

@@ -17,6 +17,8 @@ A startup-grade, professional web application built with **FastAPI** (Python) an
 
 Add these variables to the deployed `frontend` project: `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `VITE_GOOGLE_CLIENT_ID`, and `PUBLIC_APP_URL`. Use a Google App Password—never your normal Gmail password. Add the deployed domain to the OAuth client's **Authorized JavaScript origins**. See `.env.example` for safe placeholders.
 
+The competition build also supports Gemini editing, smart PDF/DOCX import, manuscript snapshots, collaborator comments, originality/citation checks, cover concepts, PDF/DOCX/EPUB export, engagement analytics, publisher submissions, and a guided demo page. Follow [SETUP_GUIDE.md](SETUP_GUIDE.md) for dashboard configuration.
+
 ---
 
 ## 🌐 Local Hosting Links

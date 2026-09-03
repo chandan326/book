@@ -7,6 +7,13 @@ import { v2 as cloudinary } from 'cloudinary';
 import nodemailer from 'nodemailer';
 import crypto from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
+import PDFDocument from 'pdfkit';
+import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
+import mammoth from 'mammoth';
+import { PDFParse } from 'pdf-parse';
+import epubPackage from 'epub-gen-memory';
+
+const epub = epubPackage.default || epubPackage;
 
 const app = express();
 app.disable('x-powered-by');
@@ -45,6 +52,23 @@ const chapterSchema = new mongoose.Schema({
   order_index: { type: Number, default: 0 },
   readability_score: { type: Number, default: 88 },
   sections: { type: [sectionSchema], default: [] }
+}, { _id: true });
+
+const versionSchema = new mongoose.Schema({
+  label: { type: String, default: 'Manual snapshot' },
+  chapters: { type: [chapterSchema], default: [] },
+  createdBy: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now }
+}, { _id: true });
+
+const commentSchema = new mongoose.Schema({
+  author_name: String, author_email: String, message: { type: String, maxlength: 1000 },
+  resolved: { type: Boolean, default: false }, createdAt: { type: Date, default: Date.now }
+}, { _id: true });
+
+const submissionSchema = new mongoose.Schema({
+  publisher_name: String, publisher_email: String, status: { type: String, default: 'Prepared' },
+  note: { type: String, maxlength: 1200 }, createdAt: { type: Date, default: Date.now }
 }, { _id: true });
 
 const userSchema = new mongoose.Schema({
@@ -91,6 +115,11 @@ const bookSchema = new mongoose.Schema({
   back_matter_json: { type: mongoose.Schema.Types.Mixed, default: {} },
   style_guide_json: { type: mongoose.Schema.Types.Mixed, default: {} },
   chapters: { type: [chapterSchema], default: [] }
+  ,versions: { type: [versionSchema], default: [] }
+  ,comments: { type: [commentSchema], default: [] }
+  ,collaborators: { type: [String], default: [] }
+  ,publisher_submissions: { type: [submissionSchema], default: [] }
+  ,reading_completions: { type: Number, default: 0 }
 }, { timestamps: true });
 
 bookSchema.index({ title: 'text', description: 'text', genre: 'text' });
@@ -194,6 +223,25 @@ const normalize = (value) => {
 
 function signToken(user) {
   return jwt.sign({ sub: user._id.toString(), email: user.email }, requiredEnv('JWT_SECRET'), { expiresIn: '7d' });
+}
+
+function owns(book, user) {
+  return String(book.author_id) === String(user._id) || book.collaborators.includes(user.email);
+}
+
+function manuscriptText(book) {
+  return book.chapters.map((chapter) => `${chapter.title}\n${chapter.sections.map((section) => `${section.title}\n${section.content}`).join('\n\n')}`).join('\n\n');
+}
+
+async function askGemini(prompt) {
+  if (!process.env.GEMINI_API_KEY) return null;
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.45, maxOutputTokens: 1200 } })
+  });
+  if (!response.ok) throw new Error('AI provider request failed');
+  const payload = await response.json();
+  return payload.candidates?.[0]?.content?.parts?.map((part) => part.text).join('') || null;
 }
 
 async function optionalAuth(req) {
@@ -419,10 +467,86 @@ app.post('/api/v1/ai/assistant-chat', requireAuth, async (req, res) => {
   const prompt = String(req.body?.user_prompt || '').trim();
   if (!selected && !prompt) return res.status(400).json({ detail: 'Text or a question is required' });
   const sentences = selected.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map((value) => value.trim()) || [];
-  const response = prompt.toLowerCase().includes('translate')
-    ? 'Translation requires a configured language-model provider. Your original text has been preserved.'
-    : sentences.slice(0, 2).join(' ') || 'Add chapter content to receive a grounded response.';
-  res.json({ response, suggestions: [], category: 'assistant' });
+  const systemPrompt = `You are PANNA, a careful book editor. Follow the author's instruction, preserve meaning, and return only the improved text.\nInstruction: ${prompt}\nSelected manuscript text:\n${selected.slice(0, 12000)}`;
+  const aiResponse = await askGemini(systemPrompt).catch(() => null);
+  const response = aiResponse || sentences.slice(0, 2).join(' ') || 'Add chapter content to receive a grounded response.';
+  res.json({ response, suggestions: [], category: 'assistant', provider: aiResponse ? 'gemini' : 'local' });
+});
+
+app.post('/api/v1/ai/originality-check', requireAuth, async (req, res) => {
+  const text = String(req.body?.text || '').trim();
+  if (text.length < 40) return res.status(400).json({ detail: 'Add at least 40 characters to run a useful check' });
+  const sentences = text.split(/[.!?]+/).map((part) => part.trim()).filter(Boolean);
+  const repeated = sentences.filter((sentence, index) => sentences.indexOf(sentence) !== index);
+  const citations = [...text.matchAll(/(?:https?:\/\/\S+|\[[0-9]+\]|\([A-Z][^)]*,\s*\d{4}\))/g)].map((match) => match[0]);
+  res.json({
+    originality_score: Math.max(55, 100 - repeated.length * 12),
+    repeated_passages: [...new Set(repeated)].slice(0, 5), citations_found: citations.slice(0, 20),
+    citation_note: citations.length ? 'Citations detected; verify every source before publishing.' : 'No citations detected. Add sources for factual claims.',
+    disclaimer: 'This is an internal similarity and citation-quality scan, not a web-wide plagiarism verdict.'
+  });
+});
+
+app.post('/api/v1/ai/cover-concept', requireAuth, async (req, res) => {
+  const title = String(req.body?.title || 'Untitled Book');
+  const genre = String(req.body?.genre || 'Non-fiction');
+  const generated = await askGemini(`Create one concise professional book-cover art direction for "${title}" in ${genre}. Return a 2-sentence visual concept and a 5-word subtitle.`).catch(() => null);
+  res.json({ title, genre, concept: generated || `A bold editorial cover using a deep navy field, warm orange focal shape, and confident modern typography. Keep the composition minimal and readable at thumbnail size.`, palette: ['#111827','#F97316','#FFF7ED'], status: generated ? 'AI generated' : 'Smart template' });
+});
+
+app.post('/api/v1/books/:bookId/versions', requireAuth, async (req, res) => {
+  const book = await Book.findById(req.params.bookId);
+  if (!book || !owns(book, req.user)) return res.status(404).json({ detail: 'Book not found' });
+  book.versions.push({ label: req.body?.label || 'Manual snapshot', chapters: book.chapters.map((c) => c.toObject()), createdBy: req.user.email });
+  if (book.versions.length > 20) book.versions.shift();
+  await book.save(); res.status(201).json(normalize(book.versions.at(-1)));
+});
+
+app.get('/api/v1/books/:bookId/versions', requireAuth, async (req, res) => {
+  const book = await Book.findById(req.params.bookId);
+  if (!book || !owns(book, req.user)) return res.status(404).json({ detail: 'Book not found' });
+  res.json(normalize(book.versions));
+});
+
+app.post('/api/v1/books/:bookId/versions/:versionId/restore', requireAuth, async (req, res) => {
+  const book = await Book.findOne({ _id: req.params.bookId, author_id: req.user._id });
+  if (!book) return res.status(404).json({ detail: 'Book not found' });
+  const version = book.versions.id(req.params.versionId);
+  if (!version) return res.status(404).json({ detail: 'Version not found' });
+  book.versions.push({ label: 'Before restore', chapters: book.chapters.map((c) => c.toObject()), createdBy: req.user.email });
+  book.chapters = version.chapters.map((c) => c.toObject()); await book.save(); res.json(normalize(book));
+});
+
+app.post('/api/v1/books/:bookId/collaborators', requireAuth, async (req, res) => {
+  const book = await Book.findOne({ _id: req.params.bookId, author_id: req.user._id });
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!book) return res.status(404).json({ detail: 'Book not found' });
+  if (!email.includes('@')) return res.status(400).json({ detail: 'Valid collaborator email required' });
+  if (!book.collaborators.includes(email)) book.collaborators.push(email);
+  await book.save();
+  await sendEmail({ to: email, subject: `Invitation to collaborate on ${book.title}`, text: `${req.user.full_name} invited you to collaborate on "${book.title}" in PANNA.AI.\n\nOpen ${process.env.PUBLIC_APP_URL || 'PANNA.AI'} and sign in with this email.` }).catch(() => {});
+  res.json({ collaborators: book.collaborators });
+});
+
+app.post('/api/v1/books/:bookId/comments', requireAuth, async (req, res) => {
+  const book = await Book.findById(req.params.bookId);
+  if (!book || !owns(book, req.user)) return res.status(404).json({ detail: 'Book not found' });
+  book.comments.push({ author_name: req.user.full_name, author_email: req.user.email, message: req.body?.message });
+  await book.save(); res.status(201).json(normalize(book.comments.at(-1)));
+});
+
+app.get('/api/v1/books/:bookId/comments', requireAuth, async (req, res) => {
+  const book = await Book.findById(req.params.bookId);
+  if (!book || !owns(book, req.user)) return res.status(404).json({ detail: 'Book not found' });
+  res.json(normalize(book.comments));
+});
+
+app.post('/api/v1/books/:bookId/publisher-submissions', requireAuth, async (req, res) => {
+  const book = await Book.findOne({ _id: req.params.bookId, author_id: req.user._id });
+  if (!book) return res.status(404).json({ detail: 'Book not found' });
+  const submission = { publisher_name: req.body?.publisher_name, publisher_email: req.body?.publisher_email, note: req.body?.note, status: 'Prepared' };
+  book.publisher_submissions.push(submission); await book.save();
+  res.status(201).json(normalize(book.publisher_submissions.at(-1)));
 });
 
 app.post('/api/v1/ai/audit-chapter', requireAuth, async (req, res) => {
@@ -460,14 +584,65 @@ app.post('/api/v1/upload', requireAuth, upload.single('file'), async (req, res) 
   res.status(201).json({ url: uploaded.secure_url, public_id: uploaded.public_id, bytes: uploaded.bytes, resource_type: uploaded.resource_type });
 });
 
+app.post('/api/v1/manuscripts/import', requireAuth, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ detail: 'Choose a PDF, DOCX, TXT, or Markdown file' });
+  const extension = req.file.originalname.toLowerCase().split('.').pop();
+  let text = '';
+  if (extension === 'docx') text = (await mammoth.extractRawText({ buffer: req.file.buffer })).value;
+  else if (extension === 'pdf') {
+    const parser = new PDFParse({ data: req.file.buffer });
+    try { text = (await parser.getText()).text; } finally { await parser.destroy(); }
+  } else if (['txt','md'].includes(extension)) text = req.file.buffer.toString('utf8');
+  else return res.status(415).json({ detail: 'Supported formats: PDF, DOCX, TXT, MD' });
+  text = text.replace(/\r/g, '').trim();
+  if (!text) return res.status(400).json({ detail: 'No readable text was found in this file' });
+  const title = String(req.body?.title || req.file.originalname.replace(/\.[^.]+$/, '')).slice(0, 180);
+  const chunks = text.match(/[\s\S]{1,12000}(?:\n\n|$)/g) || [text.slice(0, 12000)];
+  const book = await Book.create({ title, author_id: req.user._id, author_name: req.user.full_name, description: `Imported from ${req.file.originalname}`, chapters: chunks.slice(0, 30).map((content, index) => ({ title: `Chapter ${index + 1}`, order_index: index, sections: [{ title: 'Imported manuscript', content: content.trim() }] })) });
+  res.status(201).json(normalize(book));
+});
+
+app.get('/api/v1/export/:format/:bookId', requireAuth, async (req, res) => {
+  const book = await Book.findById(req.params.bookId);
+  if (!book || !owns(book, req.user)) return res.status(404).json({ detail: 'Book not found' });
+  const safeName = book.title.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-|-$/g, '') || 'panna-book';
+  const format = req.params.format.toLowerCase();
+  if (format === 'pdf') {
+    res.setHeader('Content-Type', 'application/pdf'); res.setHeader('Content-Disposition', `attachment; filename="${safeName}.pdf"`);
+    const doc = new PDFDocument({ margin: 64, info: { Title: book.title, Author: book.author_name } }); doc.pipe(res);
+    doc.fontSize(26).text(book.title, { align: 'center' }).moveDown(.5).fontSize(12).fillColor('#64748b').text(`By ${book.author_name}`, { align: 'center' }).moveDown(2);
+    book.chapters.forEach((chapter) => { doc.fillColor('#111827').fontSize(19).text(chapter.title).moveDown(.5); chapter.sections.forEach((section) => doc.fontSize(11).text(section.content, { lineGap: 4 }).moveDown()); });
+    doc.end(); book.downloads_count += 1; await book.save(); return;
+  }
+  if (format === 'docx') {
+    const document = new Document({ sections: [{ children: [new Paragraph({ text: book.title, heading: HeadingLevel.TITLE }), new Paragraph(`By ${book.author_name}`), ...book.chapters.flatMap((chapter) => [new Paragraph({ text: chapter.title, heading: HeadingLevel.HEADING_1 }), ...chapter.sections.map((section) => new Paragraph(section.content))])] }] });
+    const buffer = await Packer.toBuffer(document); res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.wordprocessingml.document'); res.setHeader('Content-Disposition',`attachment; filename="${safeName}.docx"`); res.end(buffer); book.downloads_count += 1; await book.save(); return;
+  }
+  if (format === 'epub') {
+    const buffer = await epub({ title: book.title, author: book.author_name }, book.chapters.map((chapter) => ({ title: chapter.title, content: `<h1>${chapter.title}</h1>${chapter.sections.map((section) => `<h2>${section.title}</h2><p>${section.content.replace(/\n/g,'</p><p>')}</p>`).join('')}` })));
+    res.setHeader('Content-Type','application/epub+zip'); res.setHeader('Content-Disposition',`attachment; filename="${safeName}.epub"`); res.end(buffer); book.downloads_count += 1; await book.save(); return;
+  }
+  res.status(400).json({ detail: 'Supported export formats: PDF, DOCX, EPUB' });
+});
+
 app.get('/api/v1/analytics/dashboard', requireAuth, async (req, res) => {
   const books = await Book.find({ author_id: req.user._id }).lean();
   res.json({
     total_books: books.length,
     published_books: books.filter((book) => book.status === 'Public').length,
     total_views: books.reduce((sum, book) => sum + (book.views_count || 0), 0),
+    total_downloads: books.reduce((sum, book) => sum + (book.downloads_count || 0), 0),
+    total_completions: books.reduce((sum, book) => sum + (book.reading_completions || 0), 0),
+    completion_rate: Math.round(books.reduce((sum, book) => sum + (book.reading_completions || 0), 0) / Math.max(books.reduce((sum, book) => sum + (book.views_count || 0), 0), 1) * 100),
+    publisher_submissions: books.reduce((sum, book) => sum + (book.publisher_submissions?.length || 0), 0),
     ai_editing_usage_hours: 0
   });
+});
+
+app.post('/api/v1/books/:bookId/complete', async (req, res) => {
+  const book = await Book.findOne({ _id: req.params.bookId, status: 'Public' });
+  if (!book) return res.status(404).json({ detail: 'Book not found' });
+  book.reading_completions += 1; await book.save(); res.json({ reading_completions: book.reading_completions });
 });
 
 app.post('/api/v1/complaints', async (req, res) => {
