@@ -18,6 +18,8 @@ import CompetitionSuite from './pages/CompetitionSuite';
 
 const VALID_PAGES = ['landing', 'dashboard', 'create', 'studio', 'reader', 'learn', 'suite', 'discover', 'publishers', 'complaint', 'admin'];
 
+const getPageUrl = (page) => page === 'landing' ? '/' : `#/${page}`;
+
 const getInitialPage = () => {
   const hash = window.location.hash.replace('#/', '').replace('#', '');
   return VALID_PAGES.includes(hash) ? hash : 'landing';
@@ -109,7 +111,7 @@ function AppContent() {
     if (!VALID_PAGES.includes(newPage)) return;
     setActivePageState(newPage);
     if (pushHistory) {
-      window.history.pushState({ page: newPage }, '', `#/${newPage}`);
+      window.history.pushState({ page: newPage }, '', getPageUrl(newPage));
     }
   };
 
@@ -123,9 +125,7 @@ function AppContent() {
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('hashchange', handlePopState);
 
-    if (!window.location.hash) {
-      window.history.replaceState({ page: activePage }, '', `#/${activePage}`);
-    }
+    window.history.replaceState({ page: activePage }, '', getPageUrl(activePage));
 
     return () => {
       window.removeEventListener('popstate', handlePopState);

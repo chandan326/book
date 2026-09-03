@@ -7,13 +7,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import nodemailer from 'nodemailer';
 import crypto from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
-import PDFDocument from 'pdfkit';
-import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
-import mammoth from 'mammoth';
-import { PDFParse } from 'pdf-parse';
-import epubPackage from 'epub-gen-memory';
-
-const epub = epubPackage.default || epubPackage;
 
 const app = express();
 app.disable('x-powered-by');
@@ -262,6 +255,11 @@ async function requireAuth(req, res, next) {
   next();
 }
 
+app.get('/api/v1/health', (_req, res) => res.json({
+  status: 'online',
+  database: mongoose.connection.readyState === 1 ? 'connected' : 'not-connected'
+}));
+
 app.use(async (req, res, next) => {
   try {
     await connectDatabase();
@@ -272,8 +270,6 @@ app.use(async (req, res, next) => {
     res.status(503).json({ detail: 'Database is not configured or temporarily unavailable' });
   }
 });
-
-app.get('/api/v1/health', (_req, res) => res.json({ status: 'online', database: 'connected' }));
 
 app.post('/api/v1/auth/register', async (req, res) => {
   const { email, password, full_name } = req.body || {};
@@ -588,8 +584,12 @@ app.post('/api/v1/manuscripts/import', requireAuth, upload.single('file'), async
   if (!req.file) return res.status(400).json({ detail: 'Choose a PDF, DOCX, TXT, or Markdown file' });
   const extension = req.file.originalname.toLowerCase().split('.').pop();
   let text = '';
-  if (extension === 'docx') text = (await mammoth.extractRawText({ buffer: req.file.buffer })).value;
+  if (extension === 'docx') {
+    const { default: mammoth } = await import('mammoth');
+    text = (await mammoth.extractRawText({ buffer: req.file.buffer })).value;
+  }
   else if (extension === 'pdf') {
+    const { PDFParse } = await import('pdf-parse');
     const parser = new PDFParse({ data: req.file.buffer });
     try { text = (await parser.getText()).text; } finally { await parser.destroy(); }
   } else if (['txt','md'].includes(extension)) text = req.file.buffer.toString('utf8');
@@ -608,6 +608,7 @@ app.get('/api/v1/export/:format/:bookId', requireAuth, async (req, res) => {
   const safeName = book.title.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-|-$/g, '') || 'panna-book';
   const format = req.params.format.toLowerCase();
   if (format === 'pdf') {
+    const { default: PDFDocument } = await import('pdfkit');
     res.setHeader('Content-Type', 'application/pdf'); res.setHeader('Content-Disposition', `attachment; filename="${safeName}.pdf"`);
     const doc = new PDFDocument({ margin: 64, info: { Title: book.title, Author: book.author_name } }); doc.pipe(res);
     doc.fontSize(26).text(book.title, { align: 'center' }).moveDown(.5).fontSize(12).fillColor('#64748b').text(`By ${book.author_name}`, { align: 'center' }).moveDown(2);
@@ -615,10 +616,13 @@ app.get('/api/v1/export/:format/:bookId', requireAuth, async (req, res) => {
     doc.end(); book.downloads_count += 1; await book.save(); return;
   }
   if (format === 'docx') {
+    const { Document, Packer, Paragraph, HeadingLevel } = await import('docx');
     const document = new Document({ sections: [{ children: [new Paragraph({ text: book.title, heading: HeadingLevel.TITLE }), new Paragraph(`By ${book.author_name}`), ...book.chapters.flatMap((chapter) => [new Paragraph({ text: chapter.title, heading: HeadingLevel.HEADING_1 }), ...chapter.sections.map((section) => new Paragraph(section.content))])] }] });
     const buffer = await Packer.toBuffer(document); res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.wordprocessingml.document'); res.setHeader('Content-Disposition',`attachment; filename="${safeName}.docx"`); res.end(buffer); book.downloads_count += 1; await book.save(); return;
   }
   if (format === 'epub') {
+    const epubPackage = await import('epub-gen-memory');
+    const epub = epubPackage.default?.default || epubPackage.default || epubPackage;
     const buffer = await epub({ title: book.title, author: book.author_name }, book.chapters.map((chapter) => ({ title: chapter.title, content: `<h1>${chapter.title}</h1>${chapter.sections.map((section) => `<h2>${section.title}</h2><p>${section.content.replace(/\n/g,'</p><p>')}</p>`).join('')}` })));
     res.setHeader('Content-Type','application/epub+zip'); res.setHeader('Content-Disposition',`attachment; filename="${safeName}.epub"`); res.end(buffer); book.downloads_count += 1; await book.save(); return;
   }
