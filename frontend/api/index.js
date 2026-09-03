@@ -225,6 +225,9 @@ async function ensureStarterCatalog() {
       upsert: true
     }
   })));
+  // Keep older starter titles inside the same twelve-category taxonomy.
+  await Book.updateMany({ genre: 'Technology & Science' }, { $set: { genre: 'Technology & AI' } });
+  await Book.updateMany({ genre: 'Self-Improvement' }, { $set: { genre: 'Self-Help & Mindset' } });
   catalogChecked = true;
 }
 
