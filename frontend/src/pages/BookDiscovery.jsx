@@ -26,7 +26,8 @@ export default function BookDiscovery({ setActivePage, setSelectedBookId, addToC
 
   const filteredBooks = publicBooks.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (book.description && book.description.toLowerCase().includes(searchQuery.toLowerCase()));
+                          (book.description && book.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (book.author_name && book.author_name.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesGenre = selectedGenre === 'All' || book.genre === selectedGenre;
     return matchesSearch && matchesGenre;
   });
@@ -35,6 +36,8 @@ export default function BookDiscovery({ setActivePage, setSelectedBookId, addToC
     if (setSelectedBookId) setSelectedBookId(bookId);
     if (setActivePage) setActivePage('reader');
   };
+
+  const genres = [...new Set(publicBooks.map(book => book.genre).filter(Boolean))].sort();
 
   const handleBookAction = (book) => {
     if (book.access_type === 'paid') {
@@ -78,11 +81,7 @@ export default function BookDiscovery({ setActivePage, setSelectedBookId, addToC
           style={{ padding: '0.75rem 1rem', border: '1px solid #CBD5E1', borderRadius: '0.5rem', fontSize: '0.95rem' }}
         >
           <option value="All">All Genres</option>
-          <option value="Technology & Science">Technology & Science</option>
-          <option value="Technology & Publishing">Technology & Publishing</option>
-          <option value="Non-fiction">Non-fiction</option>
-          <option value="Novel / Fiction">Novel / Fiction</option>
-          <option value="Academic & Research">Academic & Research</option>
+          {genres.map(genre => <option key={genre} value={genre}>{genre}</option>)}
         </select>
       </div>
 

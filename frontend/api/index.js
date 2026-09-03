@@ -86,6 +86,7 @@ const complaintSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const bookSchema = new mongoose.Schema({
+  seed_key: { type: String, sparse: true, unique: true, index: true },
   title: { type: String, required: true, trim: true, maxlength: 180 },
   subtitle: { type: String, default: '', maxlength: 240 },
   author_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PannaUser', required: true, index: true },
@@ -159,36 +160,72 @@ async function sendEmail({ to, subject, text, replyTo }) {
 }
 
 let catalogChecked = false;
+const catalogBlueprints = [
+  ['fiction-lantern','The Lantern at Riverbend','Fiction & Literature','A thoughtful story about a riverside community rebuilding its old library.','community, courage, and the value of shared stories'],
+  ['fiction-monsoon','Letters from Monsoon Street','Fiction & Literature','Five neighbours discover how small acts of kindness can change a busy street.','empathy, communication, and belonging'],
+  ['nonfiction-systems','Everyday Systems That Work','Non-Fiction','A practical guide to organising study, projects, and personal responsibilities.','simple systems, reflection, and consistent improvement'],
+  ['nonfiction-curiosity','The Curious Mind Handbook','Non-Fiction','Learn how to ask stronger questions and turn curiosity into useful knowledge.','observation, research, and clear reasoning'],
+  ['scifi-garden','Orbit of the Last Garden','Sci-Fi & Fantasy','Young researchers protect a space garden that carries seeds from Earth.','science, stewardship, teamwork, and hope'],
+  ['scifi-sky','The Clockwork Sky','Sci-Fi & Fantasy','An apprentice engineer repairs a city whose weather is guided by ancient machines.','invention, responsibility, and creative problem-solving'],
+  ['mystery-platform','The Vanishing Platform','Mystery & Thriller','A student reporter investigates why an unused railway platform appears on old maps.','evidence, patience, and ethical investigation'],
+  ['mystery-cipher','Cipher at Dawn','Mystery & Thriller','A harmless campus puzzle leads a team through archives, codes, and forgotten inventions.','logic, collaboration, and careful verification'],
+  ['selfhelp-focus','Small Steps, Strong Focus','Self-Help & Mindset','An encouraging system for building attention and completing meaningful work.','focus, healthy routines, and achievable progress'],
+  ['selfhelp-confidence','The Confidence Practice','Self-Help & Mindset','Practical exercises for speaking, learning, and recovering from ordinary setbacks.','preparation, self-respect, and steady practice'],
+  ['biography-builder','Aarav Builds a Better Block','Biography & Memoir','A fictional educational biography of a young civic innovator improving his neighbourhood.','service, learning, and responsible leadership'],
+  ['biography-scientist','Meera and the Open Notebook','Biography & Memoir','A fictional educational memoir about a student who grows into a community scientist.','curiosity, persistence, and sharing knowledge'],
+  ['business-startup','The Student Startup Playbook','Business & Finance','A beginner-friendly path from useful problem to responsible student venture.','customer discovery, budgeting, and honest execution'],
+  ['business-money','Money Basics for Young Builders','Business & Finance','Understand budgets, pricing, savings, and sustainable project decisions.','financial literacy, planning, and responsible choices'],
+  ['technology-ai','Practical AI Foundations','Technology & AI','Clear mental models for data, models, evaluation, and responsible artificial intelligence.','AI fundamentals, evaluation, and human oversight'],
+  ['technology-agents','Reliable Agent Workflows','Technology & AI','Design AI agents that plan, use tools, verify results, and remain observable.','agent architecture, safety checks, and dependable delivery'],
+  ['romance-letters','The Distance Between Letters','Romance & Drama','A gentle coming-of-age drama about friendship, communication, and changing ambitions.','respect, honest conversation, and personal growth'],
+  ['romance-stage','A Stage for Two','Romance & Drama','Two theatre students learn to balance teamwork, expectations, and mutual respect.','boundaries, collaboration, and mature communication'],
+  ['history-cities','Cities That Shaped India','History & Politics','An accessible tour of Indian cities as centres of trade, learning, culture, and public life.','historical evidence, civic change, and cultural continuity'],
+  ['history-democracy','Democracy in Everyday Life','History & Politics','A clear introduction to institutions, participation, rights, and public responsibility.','constitutional values, dialogue, and informed citizenship'],
+  ['poetry-rain','Sketches of Rain','Poetry & Art','Original reflective poems and short notes inspired by rain, streets, trees, and memory.','imagery, rhythm, observation, and artistic expression'],
+  ['poetry-colours','Colours That Remember','Poetry & Art','An original collection exploring colour, place, craft, and the act of noticing.','visual language, creative practice, and interpretation'],
+  ['audio-listening','The Listening Journey','Audiobooks & Audio','A narration-ready guide to active listening, voice, pacing, and audio storytelling.','listening skills, narration, and accessible storytelling'],
+  ['audio-voices','Voices of Discovery','Audiobooks & Audio','Five narration-ready episodes about learners solving meaningful community problems.','spoken explanation, curiosity, and collaborative discovery']
+];
+
+function buildSeedChapters(title, focus) {
+  const chapters = [
+    ['Opening the Door', `Every useful journey begins by understanding why ${focus} matter. ${title} starts with a clear situation, introduces the central questions, and gives the reader enough context to participate actively. Instead of rushing toward an answer, this chapter shows how observation and patient thinking reveal what is truly important. The examples are intentionally practical so a student, creator, or first-time reader can connect the ideas with daily life.\n\nThe chapter also establishes a simple habit: notice, record, discuss, and improve. Readers are encouraged to separate assumptions from evidence and to listen to more than one perspective. This foundation makes the rest of the book easier to follow and turns reading into an active process rather than passive consumption.`],
+    ['Understanding the Core', `This chapter explores the main ideas behind ${focus}. Each idea is explained through plain language, a concrete example, and a short reflection. The goal is not memorisation; it is to build a mental model that can be reused when the situation changes. Readers learn how separate details connect, why trade-offs appear, and how thoughtful decisions are made.\n\nA strong understanding grows when we compare possibilities and test our reasoning. The chapter therefore asks readers to identify patterns, explain them in their own words, and check whether their conclusions match the available evidence. By the end, the topic feels structured, approachable, and ready for practical use.`],
+    ['A Practical Method', `Ideas become valuable when they guide action. Here, ${title} introduces a repeatable method built around planning, small experiments, feedback, and revision. The method begins with a specific goal, divides it into manageable steps, and defines what success should look like. Readers are reminded to keep notes so progress can be reviewed honestly.\n\nThe method is deliberately flexible. A learner can use it for a class assignment, a creative project, or a community challenge. When a step does not work, the response is not blame; it is investigation. Adjusting the plan based on evidence develops confidence and produces results that are clearer, safer, and more dependable.`],
+    ['Learning from an Example', `A realistic example now brings ${focus} together. A small team faces an uncertain problem, gathers information, assigns responsibilities, and tests an initial solution. Their first attempt is incomplete, but the feedback shows exactly what must improve. They revise the work, explain their decisions, and invite another person to review the outcome.\n\nThe example demonstrates that good work rarely arrives fully formed. Quality develops through communication, verification, and respectful disagreement. Readers can pause after each stage and consider what they would do differently. This makes the chapter useful both as a story and as a model for future projects.`],
+    ['Building the Next Chapter', `The final chapter converts the lessons of ${title} into a personal action plan. Readers choose one meaningful goal, define a first step that can be completed soon, and decide how they will measure progress. They also identify people, tools, or reliable sources that can support the work without taking away their own responsibility.\n\nLasting improvement depends on consistency rather than dramatic promises. A short review at the end of each week can reveal what worked, what changed, and what deserves attention next. The book closes with an invitation to keep learning, share credit, protect trust, and use ${focus} to create work that genuinely helps others.`]
+  ];
+  return chapters.map(([chapterTitle, content], index) => ({
+    title: `Chapter ${index + 1}: ${chapterTitle}`,
+    summary: chapterTitle,
+    order_index: index,
+    sections: [{ title: 'Main reading', content, order_index: 0 }]
+  }));
+}
+
 async function ensureStarterCatalog() {
   if (catalogChecked) return;
-  catalogChecked = true;
-  if (await Book.exists({ status: 'Public' })) return;
   const passwordHash = await bcrypt.hash(jwt.sign({ seed: true }, requiredEnv('JWT_SECRET')), 10);
   const author = await User.findOneAndUpdate(
     { email: 'library@panna.ai' },
     { $setOnInsert: { full_name: 'PANNA Learning Library', passwordHash, role: 'Admin' } },
     { upsert: true, new: true }
   );
-  await Book.create([
-    {
-      title: "The AI Learner's Blueprint", subtitle: 'Understand machine learning through clear mental models',
-      author_id: author._id, author_name: author.full_name, genre: 'Technology & Science', status: 'Public', access_type: 'free',
-      description: 'A practical introduction to learning systems, evaluation, and responsible AI.', views_count: 1240,
-      chapters: [{ title: 'Chapter 1: How Machines Learn', summary: 'Patterns, data, and generalization.', sections: [{ title: 'From examples to predictions', content: 'Machine learning helps computers learn patterns from examples instead of following only fixed instructions. A model is trained on data and evaluated on unseen examples. Evaluation matters because a model can memorize its training data without learning a general pattern, a problem called overfitting. Validation and regularization help reduce overfitting.' }] }]
-    },
-    {
-      title: 'Deep Focus for Students', subtitle: 'A practical guide to attention and active recall',
-      author_id: author._id, author_name: author.full_name, genre: 'Self-Improvement', status: 'Public', access_type: 'free',
-      description: 'Build sustainable study habits with focused sessions, retrieval practice, and useful feedback.', views_count: 860,
-      chapters: [{ title: 'Chapter 1: Active Learning', summary: 'Why recall is stronger than rereading.', sections: [{ title: 'Retrieval practice', content: 'Active recall strengthens learning by asking the brain to retrieve an idea without seeing the answer first. Short quizzes provide useful feedback and reveal which concepts need revision. Spaced practice revisits those concepts over time instead of concentrating all study in one session.' }] }]
-    },
-    {
-      title: 'Building Responsible AI', subtitle: 'Fairness, privacy, and human oversight',
-      author_id: author._id, author_name: author.full_name, genre: 'Technology & Science', status: 'Public', access_type: 'paid', price: 149,
-      description: 'A project-focused guide to responsible data and AI decisions.', views_count: 540,
-      chapters: [{ title: 'Chapter 1: Responsible Foundations', summary: 'Core principles for trustworthy systems.', sections: [{ title: 'Human-centred safeguards', content: 'Responsible AI requires teams to examine data quality, fairness, privacy, transparency, and human oversight throughout a system lifecycle.' }] }]
+  await Book.bulkWrite(catalogBlueprints.map(([seedKey, title, genre, description, focus], index) => ({
+    updateOne: {
+      filter: { seed_key: seedKey },
+      update: { $setOnInsert: {
+        seed_key: seedKey, title, subtitle: `A PANNA original in ${genre}`,
+        author_id: author._id, author_name: 'PANNA Original Library', genre,
+        target_audience: 'Students, creators, and general readers', writing_style: 'Clear and engaging',
+        description, status: 'Public', access_type: index % 2 === 0 ? 'free' : 'paid',
+        price: index % 2 === 0 ? 0 : 49, currency: 'INR', views_count: 120 + index * 17,
+        chapters: buildSeedChapters(title, focus)
+      } },
+      upsert: true
     }
-  ]);
+  })));
+  catalogChecked = true;
 }
 
 const publicUser = (user) => ({
