@@ -15,7 +15,8 @@ export default function LandingPage({
   setIsCartOpen,
   favoriteItems = [],
   toggleFavorite,
-  setIsFavoritesOpen
+  setIsFavoritesOpen,
+  setDiscoveryGenre
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBookType, setSelectedBookType] = useState('all');
@@ -142,7 +143,7 @@ export default function LandingPage({
 
           <button 
             className="subnav-tab"
-            onClick={() => setActivePage('discover')}
+            onClick={() => { setDiscoveryGenre?.('Audiobooks & Audio'); setActivePage('discover'); }}
           >
             <Sparkles size={16} /> New releases
           </button>
@@ -184,22 +185,27 @@ export default function LandingPage({
             <Filter size={15} color="#EA580C" />
             <select 
               value={selectedBookType}
-              onChange={(e) => setSelectedBookType(e.target.value)}
+              onChange={(e) => {
+                const genre = e.target.value;
+                setSelectedBookType(genre);
+                setDiscoveryGenre?.(genre === 'all' ? 'All' : genre);
+                setActivePage('discover');
+              }}
               className="book-types-select"
             >
               <option value="all">Types of Books (All 12)</option>
-              <option value="fiction">📖 Fiction & Literature</option>
-              <option value="non-fiction">📚 Non-Fiction</option>
-              <option value="scifi">🚀 Sci-Fi & Fantasy</option>
-              <option value="mystery">🕵️ Mystery & Thriller</option>
-              <option value="selfhelp">💡 Self-Help & Mindset</option>
-              <option value="biography">👤 Biography & Memoir</option>
-              <option value="business">📈 Business & Finance</option>
-              <option value="technology">💻 Technology & AI</option>
-              <option value="romance">❤️ Romance & Drama</option>
-              <option value="history">🏛️ History & Politics</option>
-              <option value="poetry">🎨 Poetry & Art</option>
-              <option value="audiobooks">🎧 Audiobooks & Audio</option>
+              <option value="Fiction & Literature">📖 Fiction & Literature</option>
+              <option value="Non-Fiction">📚 Non-Fiction</option>
+              <option value="Sci-Fi & Fantasy">🚀 Sci-Fi & Fantasy</option>
+              <option value="Mystery & Thriller">🕵️ Mystery & Thriller</option>
+              <option value="Self-Help & Mindset">💡 Self-Help & Mindset</option>
+              <option value="Biography & Memoir">👤 Biography & Memoir</option>
+              <option value="Business & Finance">📈 Business & Finance</option>
+              <option value="Technology & AI">💻 Technology & AI</option>
+              <option value="Romance & Drama">❤️ Romance & Drama</option>
+              <option value="History & Politics">🏛️ History & Politics</option>
+              <option value="Poetry & Art">🎨 Poetry & Art</option>
+              <option value="Audiobooks & Audio">🎧 Audiobooks & Audio</option>
             </select>
           </div>
 
