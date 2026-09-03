@@ -183,7 +183,7 @@ export default function ReaderModePage({ selectedBookId, setActivePage }) {
           <button 
             onClick={() => {
               if (isFullView) setIsFullView(false);
-              setActivePage('dashboard');
+              setActivePage('discover');
             }}
             style={{ 
               background: 'transparent', 
