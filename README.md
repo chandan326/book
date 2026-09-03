@@ -13,6 +13,10 @@ PANNA.AI turns books and course chapters into interactive learning experiences. 
 
 A startup-grade, professional web application built with **FastAPI** (Python) and **React + Vite** (JavaScript/Tailwind CSS).
 
+## Gmail and Google sign-in setup
+
+Add these variables to the deployed `frontend` project: `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `ADMIN_EMAIL`, `GOOGLE_CLIENT_ID`, `VITE_GOOGLE_CLIENT_ID`, and `PUBLIC_APP_URL`. Use a Google App Password—never your normal Gmail password. Add the deployed domain to the OAuth client's **Authorized JavaScript origins**. See `.env.example` for safe placeholders.
+
 ---
 
 ## 🌐 Local Hosting Links

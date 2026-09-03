@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, Mail, Paperclip, Send, Info, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { apiRequest } from '../services/api';
 import './RaiseComplaintPage.css';
 
 export default function RaiseComplaintPage() {
@@ -29,24 +30,13 @@ export default function RaiseComplaintPage() {
       setLoading(true);
       setErrorMsg('');
 
-      const formData = new FormData();
-      if (senderName) formData.append('sender_name', senderName);
-      if (senderEmail) formData.append('sender_email', senderEmail);
-      formData.append('subject', subject);
-      formData.append('message', message);
-      if (attachment) formData.append('attachment', attachment);
-
-      const res = await fetch('http://127.0.0.1:8000/api/v1/complaints/', {
-        method: 'POST',
-        body: formData
+      const data = await apiRequest('/complaints', 'POST', {
+        sender_name: senderName,
+        sender_email: senderEmail,
+        subject,
+        message
       });
-
-      if (!res.ok) {
-        throw new Error('Failed to submit complaint. Please try again.');
-      }
-
-      const data = await res.json();
-      setSuccessMsg(`Complaint #${data.id} submitted successfully! Delivered directly to ${data.target_email}.`);
+      setSuccessMsg(`Support request #${data.id.slice(-6).toUpperCase()} submitted successfully. We will reply by email.`);
       setSubject('');
       setMessage('');
       setAttachment(null);
@@ -79,7 +69,7 @@ export default function RaiseComplaintPage() {
             </div>
             <div className="badge-text-box">
               <span className="badge-label">Complaints sent directly to:</span>
-              <span className="badge-email">chandan.rai771714@gmail.com</span>
+              <span className="badge-email">Secure Gmail support channel</span>
             </div>
           </div>
         </div>
@@ -164,9 +154,10 @@ export default function RaiseComplaintPage() {
             <div className="attachment-picker-group">
               <label className="file-input-btn">
                 <Paperclip size={18} />
-                {attachment ? attachment.name : 'Attach Files (PDF, Image, etc.)'}
+                {attachment ? attachment.name : 'Attachment support coming next'}
                 <input 
-                  type="file" 
+                  type="file"
+                  disabled
                   style={{ display: 'none' }}
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {

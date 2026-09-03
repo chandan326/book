@@ -4,6 +4,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
+import nodemailer from 'nodemailer';
+import crypto from 'node:crypto';
+import { OAuth2Client } from 'google-auth-library';
 
 const app = express();
 app.disable('x-powered-by');
@@ -50,7 +53,19 @@ const userSchema = new mongoose.Schema({
   full_name: { type: String, required: true, trim: true, maxlength: 100 },
   role: { type: String, enum: ['User', 'Admin', 'Super Admin'], default: 'User' },
   bio: { type: String, default: '', maxlength: 500 },
-  purchasedBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PannaBook' }]
+  purchasedBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PannaBook' }],
+  googleId: { type: String, sparse: true, unique: true },
+  emailVerified: { type: Boolean, default: false },
+  resetTokenHash: { type: String, default: '' },
+  resetTokenExpiresAt: { type: Date }
+}, { timestamps: true });
+
+const complaintSchema = new mongoose.Schema({
+  sender_name: { type: String, default: 'Anonymous Author', maxlength: 100 },
+  sender_email: { type: String, default: '', maxlength: 180 },
+  subject: { type: String, required: true, maxlength: 160 },
+  message: { type: String, required: true, maxlength: 5000 },
+  status: { type: String, enum: ['Pending', 'In Review', 'Resolved'], default: 'Pending' }
 }, { timestamps: true });
 
 const bookSchema = new mongoose.Schema({
@@ -94,6 +109,32 @@ orderSchema.index({ user_id: 1, book_id: 1, status: 1 });
 const User = mongoose.models.PannaUser || mongoose.model('PannaUser', userSchema);
 const Book = mongoose.models.PannaBook || mongoose.model('PannaBook', bookSchema);
 const Order = mongoose.models.PannaOrder || mongoose.model('PannaOrder', orderSchema);
+const Complaint = mongoose.models.PannaComplaint || mongoose.model('PannaComplaint', complaintSchema);
+
+const googleClient = new OAuth2Client();
+let mailTransport;
+function getMailTransport() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return null;
+  if (!mailTransport) {
+    mailTransport = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD }
+    });
+  }
+  return mailTransport;
+}
+
+async function sendEmail({ to, subject, text, replyTo }) {
+  const transport = getMailTransport();
+  if (!transport) {
+    console.warn('Gmail is not configured; email event recorded without delivery.');
+    return false;
+  }
+  await transport.sendMail({
+    from: `PANNA.AI <${process.env.GMAIL_USER}>`, to, subject, text, replyTo
+  });
+  return true;
+}
 
 let catalogChecked = false;
 async function ensureStarterCatalog() {
@@ -130,7 +171,7 @@ async function ensureStarterCatalog() {
 
 const publicUser = (user) => ({
   id: user._id.toString(), email: user.email, full_name: user.full_name,
-  role: user.role, bio: user.bio || ''
+  role: user.role, bio: user.bio || '', email_verified: Boolean(user.emailVerified)
 });
 
 const normalize = (value) => {
@@ -193,7 +234,67 @@ app.post('/api/v1/auth/register', async (req, res) => {
   }
   if (await User.exists({ email: email.toLowerCase() })) return res.status(400).json({ detail: 'Email is already registered' });
   const user = await User.create({ email, full_name, passwordHash: await bcrypt.hash(password, 12) });
+  await sendEmail({
+    to: user.email,
+    subject: 'Welcome to PANNA.AI',
+    text: `Hi ${user.full_name},\n\nYour PANNA.AI author workspace is ready. Start with an outline, import a manuscript, or explore the learning library.\n\n— PANNA.AI`
+  }).catch((error) => console.error('Welcome email failed:', error.message));
   res.status(201).json({ access_token: signToken(user), token_type: 'bearer', user: publicUser(user) });
+});
+
+app.post('/api/v1/auth/google', async (req, res) => {
+  const credential = String(req.body?.credential || '');
+  const clientId = requiredEnv('GOOGLE_CLIENT_ID');
+  const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: clientId });
+  const profile = ticket.getPayload();
+  if (!profile?.email || !profile.email_verified) return res.status(401).json({ detail: 'Google account could not be verified' });
+  let user = await User.findOne({ email: profile.email.toLowerCase() });
+  if (!user) {
+    user = await User.create({
+      email: profile.email,
+      full_name: profile.name || 'PANNA Author',
+      googleId: profile.sub,
+      emailVerified: true,
+      passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12)
+    });
+    await sendEmail({ to: user.email, subject: 'Welcome to PANNA.AI', text: `Hi ${user.full_name},\n\nYour Google account is now connected to PANNA.AI.\n\n— PANNA.AI` }).catch(() => {});
+  } else {
+    user.googleId = user.googleId || profile.sub;
+    user.emailVerified = true;
+    await user.save();
+  }
+  res.json({ access_token: signToken(user), token_type: 'bearer', user: publicUser(user) });
+});
+
+app.post('/api/v1/auth/forgot-password', async (req, res) => {
+  const email = String(req.body?.email || '').toLowerCase();
+  const user = await User.findOne({ email });
+  if (user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    user.resetTokenExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
+    await user.save();
+    const origin = process.env.PUBLIC_APP_URL || 'https://panna-ai.vercel.app';
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset your PANNA.AI password',
+      text: `Reset your password within 30 minutes:\n${origin}/#/reset-password?token=${token}\n\nIf you did not request this, ignore this email.`
+    }).catch((error) => console.error('Reset email failed:', error.message));
+  }
+  res.json({ message: 'If that account exists, a secure reset link has been sent.' });
+});
+
+app.post('/api/v1/auth/reset-password', async (req, res) => {
+  const tokenHash = crypto.createHash('sha256').update(String(req.body?.token || '')).digest('hex');
+  const password = String(req.body?.password || '');
+  if (password.length < 8) return res.status(400).json({ detail: 'Password must contain at least 8 characters' });
+  const user = await User.findOne({ resetTokenHash: tokenHash, resetTokenExpiresAt: { $gt: new Date() } });
+  if (!user) return res.status(400).json({ detail: 'Reset link is invalid or expired' });
+  user.passwordHash = await bcrypt.hash(password, 12);
+  user.resetTokenHash = '';
+  user.resetTokenExpiresAt = undefined;
+  await user.save();
+  res.json({ message: 'Password updated successfully' });
 });
 
 app.post('/api/v1/auth/login', express.urlencoded({ extended: false }), async (req, res) => {
@@ -367,6 +468,23 @@ app.get('/api/v1/analytics/dashboard', requireAuth, async (req, res) => {
     total_views: books.reduce((sum, book) => sum + (book.views_count || 0), 0),
     ai_editing_usage_hours: 0
   });
+});
+
+app.post('/api/v1/complaints', async (req, res) => {
+  const senderName = String(req.body?.sender_name || 'Anonymous Author').trim();
+  const senderEmail = String(req.body?.sender_email || '').trim().toLowerCase();
+  const subject = String(req.body?.subject || '').trim();
+  const message = String(req.body?.message || '').trim();
+  if (!subject || !message) return res.status(400).json({ detail: 'Subject and message are required' });
+  const complaint = await Complaint.create({ sender_name: senderName, sender_email: senderEmail, subject, message });
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
+  const delivered = adminEmail ? await sendEmail({
+    to: adminEmail,
+    replyTo: senderEmail || undefined,
+    subject: `[PANNA Support #${complaint._id}] ${subject}`,
+    text: `From: ${senderName}${senderEmail ? ` <${senderEmail}>` : ''}\n\n${message}`
+  }).catch((error) => { console.error('Support email failed:', error.message); return false; }) : false;
+  res.status(201).json({ id: complaint._id.toString(), message: 'Your request has been recorded.', email_delivered: delivered });
 });
 
 app.use((error, _req, res, _next) => {

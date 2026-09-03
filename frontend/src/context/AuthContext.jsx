@@ -46,13 +46,22 @@ export function AuthProvider({ children }) {
     return res.user;
   };
 
+  const loginWithGoogle = async (credential) => {
+    const res = await apiRequest('/auth/google', 'POST', { credential });
+    setAuthToken(res.access_token);
+    setUser(res.user);
+    return res.user;
+  };
+
+  const requestPasswordReset = (email) => apiRequest('/auth/forgot-password', 'POST', { email });
+
   const logout = () => {
     setAuthToken("");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, requestPasswordReset, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

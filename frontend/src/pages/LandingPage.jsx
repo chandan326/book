@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, BookOpen, Headphones, Search, ShoppingBag, Heart,
-  Star, Bookmark, MapPin, ChevronRight, Filter, PlusCircle
+  Star, Bookmark, MapPin, ChevronRight, Filter, PlusCircle, FileUp, WandSparkles, Globe2, CheckCircle2
 } from 'lucide-react';
 import './LandingPage.css';
 
@@ -241,6 +241,26 @@ export default function LandingPage({
           </button>
         </div>
       </div>
+
+      <section className="panna-hero">
+        <div className="panna-hero-copy">
+          <div className="hero-kicker"><Sparkles size={15}/> AI-powered writing & publishing workspace</div>
+          <h1>Turn your idea into a book<br/><em>worth publishing.</em></h1>
+          <p>Plan, write, improve and prepare your manuscript for readers—inside one distraction-free studio built for first-time and experienced authors.</p>
+          <div className="hero-actions">
+            <button className="hero-primary" onClick={() => user ? setActivePage('create') : openAuthModal('signup')}><PlusCircle size={18}/> Start writing free</button>
+            <button className="hero-secondary" onClick={() => setActivePage('discover')}><BookOpen size={18}/> Explore the library</button>
+          </div>
+          <div className="hero-trust"><span><CheckCircle2 size={15}/> Free to start</span><span><CheckCircle2 size={15}/> Your work stays private</span><span><CheckCircle2 size={15}/> Export anytime</span></div>
+        </div>
+        <div className="studio-preview" aria-label="PANNA writing workflow preview">
+          <div className="preview-top"><span className="preview-logo">P</span><div><strong>The AI Author's Blueprint</strong><small>Draft saved just now</small></div><span className="preview-status">82% ready</span></div>
+          <div className="preview-document"><small>CHAPTER 04</small><h3>Designing reliable AI workflows</h3><p>A useful agent does more than generate text. It plans a goal, selects tools, verifies outputs and keeps the author in control.</p><div className="suggestion-card"><WandSparkles size={18}/><div><strong>Clarity improvement</strong><span>Add a concrete example after this paragraph.</span></div><button>Apply</button></div></div>
+          <div className="preview-flow"><span><FileUp size={16}/> Import</span><i></i><span><WandSparkles size={16}/> Improve</span><i></i><span><Globe2 size={16}/> Publish</span></div>
+        </div>
+      </section>
+
+      <section className="proof-strip"><div><strong>One workspace</strong><span>Idea to published book</span></div><div><strong>AI with control</strong><span>Review every suggestion</span></div><div><strong>Built for creators</strong><span>Write, learn and grow</span></div><div><strong>Publisher-ready</strong><span>Professional export tools</span></div></section>
 
       {/* 2. Hero Section: 3 Featured Showcase Cards */}
       <section className="featured-showcase-section">
